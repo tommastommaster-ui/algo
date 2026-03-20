@@ -1,4 +1,5 @@
 #include "myClass.h"
+#include "PriceEntry.h"
 #include <iostream>
 #include <string>
 
