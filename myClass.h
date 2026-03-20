@@ -1,6 +1,7 @@
 #ifndef MYCLASS_H
 #define MYCLASS_H
 #include <string>
+
 class hashCalc
 {
     private:

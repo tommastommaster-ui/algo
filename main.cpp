@@ -1,6 +1,9 @@
 #include "myClass.h"
+#include "PriceEntry.h"
 #include <iostream>
+#include <string>
 
+enum State { EMPTY, OCCUPIED, DELETED };
 
 int main(){
 
