@@ -1,3 +1,6 @@
+#ifndef PRICE_ENTRY_H
+#define PRICE_ENTRY_H
+
 #include <string>
 using namespace std;
 
@@ -10,3 +13,5 @@ class PriceEntry {
         double high;
         double low;
 };
+
+#endif

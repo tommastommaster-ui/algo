@@ -2,6 +2,8 @@
 #define MYCLASS_H
 
 #include <string>
+#include <vector>
+#include "PriceEntry.h"
 
 class hashCalc
 {
@@ -10,7 +12,7 @@ private:
 
 public:
     static int getTableSize();
-    static int intToHash(std::string aktie);
+    static int intToHash(std::string aktie, std::string kuerzel, std::string WKN);
 };
 
 class Aktie
@@ -19,6 +21,7 @@ public:
     std::string name;
     std::string kuerzel;
     std::string WKN;
+    std::vector<PriceEntry> prices;
 };
 
 class HashTable
