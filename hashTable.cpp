@@ -34,3 +34,4 @@ Aktie* HashTable::search(const std::string& key) {
     }
     return nullptr;
 }
+

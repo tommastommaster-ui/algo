@@ -32,6 +32,7 @@ public:
 
     void addAktie(Aktie neu);
     Aktie* search(const std::string& key);
+    void deleteAktie(const std::string& key);
 };
 
 #endif
