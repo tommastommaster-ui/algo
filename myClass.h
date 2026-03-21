@@ -1,16 +1,34 @@
 #ifndef MYCLASS_H
 #define MYCLASS_H
+
 #include <string>
 
 class hashCalc
 {
-    private:
-        static const int tableSize = 2003;
+private:
+    static const int tableSize = 2003;
 
-    public:
-        int tableArray[tableSize];
-        int intToHash(std::string aktie);
+public:
+    static int getTableSize();
+    static int intToHash(std::string aktie);
 };
 
+class Aktie
+{
+public:
+    std::string name;
+    std::string kuerzel;
+    std::string WKN;
+};
+
+class HashTable
+{
+public:
+    static const int TABLE_SIZE = 2003;
+    Aktie* table[TABLE_SIZE] = {nullptr};
+
+    void addAktie(Aktie neu);
+    Aktie* search(const std::string& key);
+};
 
 #endif
