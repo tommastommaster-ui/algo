@@ -1,7 +1,9 @@
 #include "myClass.h"
 #include <iostream>
 
-int hashCalc::intToHash(std::string aktie, std::string kuerzel, std::string WKN) {
+using namespace std;
+
+int hashCalc::intToHash(string aktie, string kuerzel, string WKN) {
     int h = 0;
     for (char c : aktie) {
         h = (h * 31 + c) % tableSize;
