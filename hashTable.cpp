@@ -23,7 +23,7 @@ Aktie* HashTable::search(const string& key) { // Funktion zum Suchen einer Aktie
     int i = 0;
     while (i < tableSize) { // Damit Schleife nicht endlos läuft
         int probe = (index + i * i) % tableSize; // Quadratisches Sondieren: zuerst am "Startplatz" suchen, dann quadratisch weiter suchen
-        if (table[probe] == nullptr) break; // Wenn ein leerer Slot gefunden wird, ist die Suche hier beendet => die Aktie kann auf diesem Weg nicht gefunden werden (da sie immer am ersten freien Slot eingefügt wird)
+        if (table[probe] == nullptr) break; // Wenn ein leerer Slot gefunden wird, ist die Such hier beendet => die Aktie kann auf diesem Weg nicht gefunden werden (da sie immer am ersten freien Slot eingefügt wird)
         if(table[probe] == DELETED) { 
             i++;
             continue;

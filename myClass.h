@@ -9,7 +9,6 @@ private:
     static const int tableSize = 2003;
 
 public:
-    static int getTableSize();
     static int intToHash(string aktie);
 };
 

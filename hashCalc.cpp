@@ -9,10 +9,8 @@ int hashCalc::intToHash(string aktie) {
     for (char c : aktie) {
         h = (h * 31 + c) % tableSize;
     }
-    return h; // Am Ende wird der berechnete Hash-Wert zurückgegeben
+    return h; // Am Ende wird der berechnete Hash Wert zurückgegeben
 }
 
-int hashCalc::getTableSize() {
-    return tableSize;
-}
+
 
