@@ -1,39 +1,44 @@
 #include "myClass.h"
 #include <iostream>
-
+Aktie* const HashTable::DELETED = reinterpret_cast<Aktie*>(-1);
 
 using namespace std;
 
 void HashTable::addAktie(Aktie neu) { // Funktion zum Hinzufügen einer Aktie zur Hash-Tabelle
-    int index = hashCalc::intToHash(neu.name); // Rufe die Hash-Funktion auf, um den Index basierend auf dem Namen der Aktie zu berechnen
+    int index = hashCalc::intToHash(neu.name); // Ruft inToHash auf, um den Hash Wert für die Aktie zu berechnen
 
-    int i = 0; // Quadratisches Sondieren: Wenn der berechnete Index bereits belegt ist, suche nach dem nächsten freien Slot
-    while (table[(index + i * i) % TABLE_SIZE] != nullptr) { // Solange der Slot belegt ist, erhöhe i
-        i++;
+    int i = 0; // Quadratisches Sondieren: Wenn der berechnete Hashwert bereits belegt ist, suche nach dem nächsten freien Platz
+    while (i < tableSize && table[(index + i * i) % tableSize] != nullptr && table[(index + i * i) % tableSize] != DELETED) { // Solange der berechnete Hashwert + quadr. Berechnung nicht leer ist, wird weitergesucht, % tableSize = Hashwert ist nie außerhalb
+        i++; // um 1 erhöhen
     }
 
-    table[(index + i * i) % TABLE_SIZE] = new Aktie(neu); // Füge die Aktie an der gefundenen Position in der Hash-Tabelle hinzu
+    if (i < tableSize) {
+        table[(index + i * i) % tableSize] = new Aktie(neu); // Aktie wird eingefügt
+    }
 }
 
-Aktie* HashTable::search(const string& key) { // Funktion zum Suchen einer Aktie in der Hash-Tabelle basierend auf einem Schlüssel (Name oder Kürzel)
-    // Zuerst versuchen, als Name zu suchen
-    int index = hashCalc::intToHash(key); // Berechne den Index basierend auf dem Schlüssel
+Aktie* HashTable::search(const string& key) { // Funktion zum Suchen einer Aktie (mit Name oder Kürzel)
+    
+    int index = hashCalc::intToHash(key); // Ruft inToHash auf, und berechnet den Hashwert für die Eingabe (Wenn Kürzel eingegeben => in quadr. Schleife wird nie gefunden)
     int i = 0;
-    while (i < TABLE_SIZE) { // Solange innerhalb der Grenzen der Tabelle
-        int probe = (index + i * i) % TABLE_SIZE; // Berechne die Position für das quadratische Sondieren
-        if (table[probe] == nullptr) break; // Wenn ein leerer Slot gefunden wird, ist die Suche hier beendet
-        if (table[probe]->name == key) { // Wenn der Name übereinstimmt, gebe die Aktie zurück
-            return table[probe]; // Aktie gefunden
+    while (i < tableSize) { // Damit Schleife nicht endlos läuft
+        int probe = (index + i * i) % tableSize; // Quadratisches Sondieren: zuerst am "Startplatz" suchen, dann quadratisch weiter suchen
+        if (table[probe] == nullptr) break; // Wenn ein leerer Slot gefunden wird, ist die Suche hier beendet => die Aktie kann auf diesem Weg nicht gefunden werden (da sie immer am ersten freien Slot eingefügt wird)
+        if(table[probe] == DELETED) { 
+            i++;
+            continue;
+        }
+        if (table[probe]->name == key) { // Aktie gefunden 
+            return table[probe]; // Return um zu printen
         }
         i++;
     }
     
-    /// durchschnittlich O(1) im Worst Case O(n)
-    //O(1) bedeutet es dauert gleich lange
+    // Durchschnittlich O(1) im Worst Case O(n)
+    // O(1) bedeutet es dauert gleich lange
 
-    // Wenn nicht gefunden, linear nach Kürzel suchen
-    for (int j = 0; j < TABLE_SIZE; j++) { // Durchsuche die gesamte Tabelle linear nach einem Eintrag mit passendem Kürzel
-        if (table[j] && table[j]->kuerzel == key) { // Wenn das Kürzel übereinstimmt, gebe die Aktie zurück
+    for (int j = 0; j < tableSize; j++) { // Lineare Suche: oben nicht gefunden oder ein Kürzel eingegebenDurchsuche die gesamte Tabelle linear nach einem Eintrag mit passendem Kürzel
+        if (table[j] != nullptr && table[j] != DELETED && table[j]->kuerzel == key) { // Wenn das Kürzel übereinstimmt, gebe die Aktie zurück
             return table[j]; // Aktie gefunden
         }
     }
@@ -44,28 +49,29 @@ Aktie* HashTable::search(const string& key) { // Funktion zum Suchen einer Aktie
 
 void HashTable::remove(const string& key) {
     // Versuche zuerst, nach Name zu löschen (quadratisches Sondieren)
-    int index = hashCalc::intToHash(key);
+    int index = hashCalc::intToHash(key); 
     int i = 0;
-    while (i < TABLE_SIZE) {
-        int probe = (index + i * i) % TABLE_SIZE;
+    while (i < tableSize) {
+        int probe = (index + i * i) % tableSize;
         if (table[probe] == nullptr) break;
+        if (table[probe] == DELETED) {
+            i++;
+            continue;
+        }
         if (table[probe]->name == key) {
             delete table[probe];
-            table[probe] = nullptr;
+            table[probe] = DELETED;
             return;
         }
         i++;
     }
 
     // Ansonsten nach Kürzel linear suchen und löschen
-    for (int j = 0; j < TABLE_SIZE; j++) {
-        if (table[j] && table[j]->kuerzel == key) {
+    for (int j = 0; j < tableSize; j++) {
+        if (table[j] != nullptr && table[j] != DELETED && table[j]->kuerzel == key) {
             delete table[j];
-            table[j] = nullptr;
+            table[j] = DELETED;
             return;
         }
     }
 }
-
-
-

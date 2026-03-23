@@ -24,12 +24,15 @@ public:
 class HashTable
 {
 public:
-    static const int TABLE_SIZE = 2003;
-    Aktie* table[TABLE_SIZE] = {nullptr};
+    static const int tableSize = 2003;
+    Aktie* table[tableSize] = {nullptr};
 
     void addAktie(Aktie neu);
     Aktie* search(const string& key);
     void remove(const string& key);
+    static Aktie* const DELETED;
 };
 
 #endif
+
+  
