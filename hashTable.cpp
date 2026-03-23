@@ -1,150 +1,71 @@
 #include "myClass.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
+
 
 using namespace std;
 
-void HashTable::addAktie(Aktie neu) {
-    int index = hashCalc::intToHash(neu.name, "", "");
+void HashTable::addAktie(Aktie neu) { // Funktion zum Hinzufügen einer Aktie zur Hash-Tabelle
+    int index = hashCalc::intToHash(neu.name); // Rufe die Hash-Funktion auf, um den Index basierend auf dem Namen der Aktie zu berechnen
 
-    int i = 0;
-    while (table[(index + i * i) % TABLE_SIZE] != nullptr) {
+    int i = 0; // Quadratisches Sondieren: Wenn der berechnete Index bereits belegt ist, suche nach dem nächsten freien Slot
+    while (table[(index + i * i) % TABLE_SIZE] != nullptr) { // Solange der Slot belegt ist, erhöhe i
         i++;
     }
 
-    table[(index + i * i) % TABLE_SIZE] = new Aktie(neu);
+    table[(index + i * i) % TABLE_SIZE] = new Aktie(neu); // Füge die Aktie an der gefundenen Position in der Hash-Tabelle hinzu
 }
 
-Aktie* HashTable::search(const string& key) {
+Aktie* HashTable::search(const string& key) { // Funktion zum Suchen einer Aktie in der Hash-Tabelle basierend auf einem Schlüssel (Name oder Kürzel)
     // Zuerst versuchen, als Name zu suchen
-    int index = hashCalc::intToHash(key, "", "");
+    int index = hashCalc::intToHash(key); // Berechne den Index basierend auf dem Schlüssel
+    int i = 0;
+    while (i < TABLE_SIZE) { // Solange innerhalb der Grenzen der Tabelle
+        int probe = (index + i * i) % TABLE_SIZE; // Berechne die Position für das quadratische Sondieren
+        if (table[probe] == nullptr) break; // Wenn ein leerer Slot gefunden wird, ist die Suche hier beendet
+        if (table[probe]->name == key) { // Wenn der Name übereinstimmt, gebe die Aktie zurück
+            return table[probe]; // Aktie gefunden
+        }
+        i++;
+    }
+    
+    /// durchschnittlich O(1) im Worst Case O(n)
+    //O(1) bedeutet es dauert gleich lange
+
+    // Wenn nicht gefunden, linear nach Kürzel suchen
+    for (int j = 0; j < TABLE_SIZE; j++) { // Durchsuche die gesamte Tabelle linear nach einem Eintrag mit passendem Kürzel
+        if (table[j] && table[j]->kuerzel == key) { // Wenn das Kürzel übereinstimmt, gebe die Aktie zurück
+            return table[j]; // Aktie gefunden
+        }
+    }
+    //lineare Durchsuchung O(n) Worst case O(n)
+    //O(n) bedeutet es muss alles durchgeheb
+    return nullptr;
+}
+
+void HashTable::remove(const string& key) {
+    // Versuche zuerst, nach Name zu löschen (quadratisches Sondieren)
+    int index = hashCalc::intToHash(key);
     int i = 0;
     while (i < TABLE_SIZE) {
         int probe = (index + i * i) % TABLE_SIZE;
         if (table[probe] == nullptr) break;
         if (table[probe]->name == key) {
-            return table[probe];
+            delete table[probe];
+            table[probe] = nullptr;
+            return;
         }
         i++;
     }
 
-    // Wenn nicht gefunden, linear nach Kürzel suchen
+    // Ansonsten nach Kürzel linear suchen und löschen
     for (int j = 0; j < TABLE_SIZE; j++) {
         if (table[j] && table[j]->kuerzel == key) {
-            return table[j];
+            delete table[j];
+            table[j] = nullptr;
+            return;
         }
     }
-    return nullptr;
 }
 
-bool HashTable::saveToFile(const string& filePath) const {
-    ofstream out(filePath);
-    if (!out.is_open()) {
-        return false;
-    }
 
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        if (!table[i]) {
-            continue;
-        }
-
-        const Aktie* a = table[i];
-        out << "A|" << a->name << "|" << a->kuerzel << "|" << a->WKN << "|" << a->prices.size() << "\n";
-
-        for (const PriceEntry& p : a->prices) {
-            out << "P|" << p.date << "|" << p.close << "|" << p.volume << "|" << p.open << "|" << p.high << "|" << p.low << "\n";
-        }
-    }
-
-    return true;
-}
-
-bool HashTable::loadFromFile(const string& filePath) {
-    ifstream in(filePath);
-    if (!in.is_open()) {
-        return false;
-    }
-
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        if (table[i]) {
-            delete table[i];
-            table[i] = nullptr;
-        }
-    }
-
-    string line;
-    while (getline(in, line)) {
-        if (line.empty()) {
-            continue;
-        }
-
-        if (line.rfind("A|", 0) != 0) {
-            continue;
-        }
-
-        vector<string> parts;
-        string token;
-        stringstream ss(line);
-        while (getline(ss, token, '|')) {
-            parts.push_back(token);
-        }
-
-        if (parts.size() < 5) {
-            continue;
-        }
-
-        Aktie neu;
-        neu.name = parts[1];
-        neu.kuerzel = parts[2];
-        neu.WKN = parts[3];
-
-        int priceCount = 0;
-        try {
-            priceCount = stoi(parts[4]);
-        } catch (...) {
-            priceCount = 0;
-        }
-
-        for (int i = 0; i < priceCount; i++) {
-            string pLine;
-            if (!getline(in, pLine)) {
-                break;
-            }
-
-            if (pLine.rfind("P|", 0) != 0) {
-                break;
-            }
-
-            vector<string> pParts;
-            string pToken;
-            stringstream pss(pLine);
-            while (getline(pss, pToken, '|')) {
-                pParts.push_back(pToken);
-            }
-
-            if (pParts.size() < 7) {
-                continue;
-            }
-
-            PriceEntry p;
-            p.date = pParts[1];
-            try {
-                p.close = stod(pParts[2]);
-                p.volume = stoll(pParts[3]);
-                p.open = stod(pParts[4]);
-                p.high = stod(pParts[5]);
-                p.low = stod(pParts[6]);
-            } catch (...) {
-                continue;
-            }
-
-            neu.prices.push_back(p);
-        }
-
-        addAktie(neu);
-    }
-
-    return true;
-}
 
